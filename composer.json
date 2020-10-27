@@ -1,0 +1,20 @@
+{
+    "name": "arendach/vodafone-msisdn",
+    "type": "library",
+    "license": "MIT",
+    "description": "Vodafone dua integration",
+    "authors": [
+        {
+            "name": "Arendach Taras",
+            "email": "arendach.taras@gmail.com"
+        }
+    ],
+    "minimum-stability": "dev",
+    "require": {},
+    "version": "1.0.0",
+    "autoload": {
+        "psr-4": {
+            "Vodafone\\Msisdn\\": "src"
+        }
+    }
+}
