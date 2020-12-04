@@ -1,115 +1,57 @@
 <?php
 
-namespace App\Services;
+declare(strict_types=1);
 
-use App\Services\Msisdn\MsisdnDecryptService;
-use App\Services\Msisdn\MsisdnDetectService;
-use App\Services\Msisdn\MsisdnHmacService;
-use App\Services\Msisdn\MsisdnNameService;
-use App\Services\Msisdn\MsisdnStorageService;
+namespace Vodafone\Msisdn;
 
-class MsisdnService
+use Vodafone\Msisdn\Services\Decrypt;
+use Vodafone\Msisdn\Services\Hmac;
+
+class Msisdn
 {
-    private $storageService;
-    private $decryptService;
-    private $nameService;
-    private $hmacService;
-    private $detectService;
+    private $decrypt;
+    private $hmac;
 
     public function __construct()
     {
-        $this->storageService = app(MsisdnStorageService::class);
-        $this->decryptService = app(MsisdnDecryptService::class);
-        $this->nameService = app(MsisdnNameService::class);
-        $this->hmacService = app(MsisdnHmacService::class);
-        $this->detectService = app(MsisdnDetectService::class);
+        $this->decrypt = new Decrypt;
+        $this->hmac = new Hmac;
     }
 
-    public function isDetected(): bool
+    /**
+     * @param string $msisdn
+     * @param string $hmac
+     * @return string|null
+     * @throws Exceptions\DecryptException
+     * @throws Exceptions\HmacException
+     */
+    public function get(string $msisdn, string $hmac): ?string
     {
-        return $this->detectService->detect();
-    }
-
-    public function getClientName(): ?string
-    {
-        $language = $this->getLanguage();
-
-        return $this->storageService->getName($language);
-    }
-
-    public function needRequest(): bool
-    {
-        return $this->detectService->needRequest();
-    }
-
-    public function getClientNumber(): ?string
-    {
-        return $this->storageService->getMsisdn();
-    }
-
-    public function getStatus(?string $ip = null): int
-    {
-        $ips = $this->storageService->getIps();
-
-        foreach ($ips as $ipKey => $status) {
-            if ($status == 1) {
-                return 1;
-            }
+        if (!$this->checkHmac($msisdn, $hmac)) {
+            return null;
         }
 
-        if (is_null($ip)) {
-            $ip = request()->ip();
-        }
-
-        return $this->storageService->getStatusForIp($ip);
+         return $this->decryptMsisdn($msisdn);
     }
 
-    public function init(?string $msisdn, ?string $hmacHash, string $ip): void
+    /**
+     * @param string $msisdn
+     * @param string $hmac
+     * @return bool
+     * @throws Exceptions\HmacException
+     */
+    private function checkHmac(string $msisdn, string $hmac): bool
     {
-        // if empty msisdn
-        if (is_null($msisdn) or is_null($hmacHash)) {
-            $this->storageService->setStatusForIp($ip, -1);
-
-            return;
-        }
-
-        $hmacTest = $this->hmacService->check($hmacHash, $msisdn);
-
-        if (!$hmacTest) {
-            $this->storageService->setStatusForIp($ip, -1);
-
-            return;
-        }
-
-        $msisdn = $this->decryptService->decrypt($msisdn);
-
-        // if not decrypt
-        if (!$msisdn) {
-            $this->storageService->setStatusForIp($ip, -1);
-
-            return;
-        }
-
-        $this->storageService->setMsisdn($msisdn);
-
-        $nameUk = $this->nameService->search($msisdn, 'uk');
-        $nameRu = $this->nameService->search($msisdn, 'ru');
-
-        // if user not found in database
-        if (!$nameUk || !$nameRu) {
-            $this->storageService->setStatusForIp($ip, -1);
-
-            return;
-        }
-
-        $this->storageService->setName($nameUk, 'uk');
-        $this->storageService->setName($nameRu, 'ru');
-
-        $this->storageService->setStatusForIp($ip, 1);
+        return $this->hmac->check($msisdn, $hmac);
     }
 
-    private function getLanguage(): string
+    /**
+     * @param string $msisdn
+     * @return string|null
+     * @throws Exceptions\DecryptException
+     */
+    private function decryptMsisdn(string $msisdn): ?string
     {
-        return app()->getLocale() == 'ru' ? 'ru' : 'uk';
+        return $this->decrypt->decrypt($msisdn);
     }
 }

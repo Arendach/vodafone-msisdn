@@ -1,60 +1,57 @@
 <?php
 
-namespace App\Services\Msisdn;
+declare(strict_types=1);
+
+namespace Vodafone\Msisdn\Services;
 
 use Exception;
-use Log;
+use Vodafone\Msisdn\Exceptions\HmacException;
 
 class Hmac
 {
     private $secret;
-    private $isDebug;
+    private $algo;
+    private $logger;
 
+    /**
+     * Hmac constructor.
+     */
     public function __construct()
     {
-        $this->secret = $this->getSecret();
-        $this->isDebug = $this->getDebug();
+        $this->secret = base64_decode(config('vodafone-msisdn.hmac-secret'));
+        $this->algo = config('vodafone-msisdn.hmac-algo');
+        $this->logger = resolve(Logger::class);
     }
 
-    public function check(string $hashHmac, string $msisdnEncrypted): bool
+    /**
+     * @param string $msisdn
+     * @param string $hmac
+     * @return bool
+     * @throws HmacException
+     */
+    public function check(string $msisdn, string $hmac): bool
     {
         try {
-            $algo = 'sha256';
+
+            $algo = $this->algo;
             $secret = $this->secret;
 
-            $hashGenerated = hash_hmac($algo, $msisdnEncrypted, $secret, true);
+            $hashGenerated = hash_hmac($algo, $msisdn, $secret, true);
             $hashGenerated = base64_encode($hashGenerated);
+            $result = $hashGenerated == $hmac;
 
-            if ($this->isDebug) {
-                $this->debugLogging($msisdnEncrypted, $hashHmac);
+            if (!$result) {
+                throw new Exception("HMAC testing failed! HMAC hash: {$hmac}, MSISDN: {$msisdn}");
             }
 
-            return $hashGenerated == $hashHmac;
+            return true;
 
         } catch (Exception $exception) {
 
-            Log::error('Error check HMAC hash -> ' . $exception->getMessage());
+            $this->logger->save($exception->getMessage());
 
-            return false;
+            throw new HmacException($exception->getMessage());
 
         }
-
-    }
-
-    private function getSecret(): ?string
-    {
-        $secret = env('MSISDN_HMAC_SECRET', 'Uk0SrLnUH8K4X1v6j1nrgG4bCTBpaKFGnRW4Eo+kJ1M=');
-
-        return base64_decode($secret);
-    }
-
-    private function getDebug(): bool
-    {
-        return env('APP_DEBUG', false);
-    }
-
-    private function debugLogging($msisdn, $hmac): void
-    {
-        Log::info("HMAC check debug: msisdn - «{$msisdn}», hmac hash - «{$hmac}»");
     }
 }
