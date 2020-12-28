@@ -33,3 +33,19 @@ $ php artisan vendor:publish --tag=vodafone-msisdn
 ```ini
 MSISDN_DEBUG_MODE=true
 ```
+
+## How to use
+
+```php
+
+$msisdn = 'xO6843saKpzFW9JF8hMzEA==';
+$hmacHash = 'ihzkBF1kq/g/yCRZ/0mZatgWnrY9LmK3RoGgHk7Hqss=';
+
+// initialize msisdn
+$msisdnService = new Vodafone\Msisdn\Msisdn();
+
+$phone = $msisdnService->get($msisdn, $hmacHash);
+
+echo $phone; // 380666817731
+
+```

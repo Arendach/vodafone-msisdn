@@ -7,6 +7,7 @@ namespace Vodafone\Msisdn\Providers;
 use Illuminate\Support\ServiceProvider;
 use Vodafone\Msisdn\Msisdn;
 use Vodafone\Msisdn\Services\Logger;
+use Illuminate\Support\Facades\Config;
 
 class VodafoneMsisdnServiceProvider extends ServiceProvider
 {
@@ -19,6 +20,12 @@ class VodafoneMsisdnServiceProvider extends ServiceProvider
 
     public function register(): void
     {
+        Config::set('logging.channels.msisdn', [
+            'driver' => 'daily',
+            'path'   => storage_path('logs/msisdn.log'),
+            'level'  => 'debug',
+        ]);
+
         $this->app->singleton(Msisdn::class, function ($app) {
             return new Msisdn;
         });
