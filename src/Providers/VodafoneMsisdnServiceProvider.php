@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Vodafone\Msisdn\Providers;
+namespace Arendach\VodafoneMsisdn\Providers;
 
 use Illuminate\Support\ServiceProvider;
-use Vodafone\Msisdn\Msisdn;
-use Vodafone\Msisdn\Services\Logger;
+use Arendach\VodafoneMsisdn\Msisdn;
+use Arendach\VodafoneMsisdn\Services\Logger;
 use Illuminate\Support\Facades\Config;
 
 class VodafoneMsisdnServiceProvider extends ServiceProvider

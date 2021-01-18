@@ -2,7 +2,7 @@
     "name": "arendach/vodafone-msisdn",
     "type": "library",
     "license": "MIT",
-    "description": "Vodafone dua integration",
+    "description": "Get phone number from msisdn header",
     "authors": [
         {
             "name": "Arendach Taras",
@@ -16,7 +16,7 @@
     },
     "autoload": {
         "psr-4": {
-            "Vodafone\\Msisdn\\": "src"
+            "Arendach\\VodafoneMsisdn\\": "src"
         },
         "files": [
             "src/helpers.php"

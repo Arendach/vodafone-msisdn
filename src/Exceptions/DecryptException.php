@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Vodafone\Msisdn\Exceptions;
+namespace Arendach\VodafoneMsisdn\Exceptions;
 
 use Exception;
 

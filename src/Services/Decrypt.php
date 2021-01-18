@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Vodafone\Msisdn\Services;
+namespace Arendach\VodafoneMsisdn\Services;
 
 use Exception;
-use Vodafone\Msisdn\Exceptions\DecryptException;
+use Arendach\VodafoneMsisdn\Exceptions\DecryptException;
 
 class Decrypt
 {

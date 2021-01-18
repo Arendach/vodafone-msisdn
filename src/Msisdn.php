@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Vodafone\Msisdn;
+namespace Arendach\VodafoneMsisdn;
 
-use MultiSessions\Session;
+use Arendach\MultiSessions\Session;
 use Psr\SimpleCache\InvalidArgumentException;
-use Vodafone\Msisdn\Services\Decrypt;
-use Vodafone\Msisdn\Services\Hmac;
+use Arendach\VodafoneMsisdn\Services\Decrypt;
+use Arendach\VodafoneMsisdn\Services\Hmac;
 
 class Msisdn
 {
@@ -15,11 +15,14 @@ class Msisdn
     private $hmac;
     private $useCache = false;
     private $cacheStorage;
+    private $phone;
 
     public function __construct()
     {
         $this->decrypt = new Decrypt;
         $this->hmac = new Hmac;
+
+        $this->phone = $this->getSessionStorage()->get('phone');
     }
 
     /**
@@ -53,6 +56,17 @@ class Msisdn
         }
 
         return $phone;
+    }
+
+    public function setPhone(string $phone): self
+    {
+        if ($this->useCache) {
+            $this->saveToCache($phone);
+        }
+
+        $this->phone = $phone;
+
+        return $this;
     }
 
     /**

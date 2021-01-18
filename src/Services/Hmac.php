@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Vodafone\Msisdn\Services;
+namespace Arendach\VodafoneMsisdn\Services;
 
 use Exception;
-use Vodafone\Msisdn\Exceptions\HmacException;
+use Arendach\VodafoneMsisdn\Exceptions\HmacException;
 
 class Hmac
 {
