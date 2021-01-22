@@ -6,8 +6,8 @@ use Arendach\VodafoneMsisdn\Msisdn;
 
 if (!function_exists('msisdn')) {
 
-    function msisdn(): Msisdn
+    /*function msisdn(): Msisdn
     {
         return resolve(Msisdn::class);
-    }
+    }*/
 }
