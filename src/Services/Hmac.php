@@ -6,12 +6,15 @@ namespace Arendach\VodafoneMsisdn\Services;
 
 use Exception;
 use Arendach\VodafoneMsisdn\Exceptions\HmacException;
+use Debugbar;
 
 class Hmac
 {
     private $secret;
     private $algo;
     private $logger;
+    private $isDebug;
+    private $isThrowException;
 
     /**
      * Hmac constructor.
@@ -20,6 +23,8 @@ class Hmac
     {
         $this->secret = base64_decode(config('vodafone-msisdn.hmac-secret'));
         $this->algo = config('vodafone-msisdn.hmac-algo');
+        $this->isDebug = config('vodafone-msisdn.debug-mode');
+        $this->isThrowException = config('vodafone-msisdn.throw-exception');
         $this->logger = resolve(Logger::class);
     }
 
@@ -31,6 +36,10 @@ class Hmac
      */
     public function check(string $msisdn, string $hmac): bool
     {
+        if ($this->isDebug) {
+            Debugbar::info("Msisdn -> «{$msisdn}», Hmac -> «{$hmac}»");
+        }
+
         try {
 
             $algo = $this->algo;
@@ -50,7 +59,11 @@ class Hmac
 
             $this->logger->save($exception->getMessage());
 
-            throw new HmacException($exception->getMessage());
+            if ($this->isThrowException) {
+                throw new HmacException($exception->getMessage());
+            }
+
+            return false;
 
         }
     }

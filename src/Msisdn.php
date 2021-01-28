@@ -11,29 +11,52 @@ use Arendach\VodafoneMsisdn\Services\Hmac;
 
 class Msisdn
 {
-    private $decrypt;
-    private $hmac;
-    private $useCache = false;
+    /**
+     * @var Decrypt
+     */
+    private $decryptService;
+
+    /**
+     * @var Hmac
+     */
+    private $hmacService;
+
+    /**
+     * @var Session
+     */
     private $cacheStorage;
+
+    /**
+     * @var string|null
+     */
     private $phone;
 
+    /**
+     * @var int
+     */
+    private $phoneStatus;
+
+    /**
+     * Msisdn constructor.
+     * @throws InvalidArgumentException
+     */
     public function __construct()
     {
-        $this->decrypt = new Decrypt;
-        $this->hmac = new Hmac;
+        $this->decryptService = new Decrypt;
+        $this->hmacService = new Hmac;
 
-        $this->phone = $this->getSessionStorage()->get('phone');
+        $this->loading();
     }
 
     /**
-     * @param bool $useCache
-     * @return $this
+     * @throws InvalidArgumentException
      */
-    public function cache(bool $useCache = false): self
+    private function loading(): void
     {
-        $this->useCache = $useCache;
+        $this->phone = $this->getCacheStorage()->get('phone');
 
-        return $this;
+        $phoneStatus = $this->getCacheStorage()->get('phone_status');
+        $this->phoneStatus = in_array($phoneStatus, [1, -1]) ? $phoneStatus : 0;
     }
 
     /**
@@ -43,54 +66,59 @@ class Msisdn
      * @throws Exceptions\DecryptException
      * @throws Exceptions\HmacException
      */
-    public function init(string $msisdn, string $hmac): ?string
+    public function decrypt(string $msisdn, string $hmac): ?string
     {
         if (!$this->checkHmac($msisdn, $hmac)) {
             return null;
         }
 
-        $phone = $this->decryptMsisdn($msisdn);
+        return $this->decryptMsisdn($msisdn);
+    }
 
-        if ($this->useCache) {
-            $this->saveToCache($phone);
-        }
+    /**
+     * @param string $msisdn
+     * @param string $hmac
+     * @return string|null
+     * @throws Exceptions\DecryptException
+     * @throws Exceptions\HmacException
+     */
+    public function decryptAndSave(string $msisdn, string $hmac): ?string
+    {
+        $phone = $this->decrypt($msisdn, $hmac);
+
+        $this->saveToCache($phone);
+
+        $this->phone = $phone;
+        $this->phoneStatus = $phone ? 1 : -1;
 
         return $phone;
     }
 
-    public function setPhone(string $phone): self
+    /**
+     * @param string $phone
+     */
+    public function setPhone(string $phone): void
     {
-        if ($this->useCache) {
-            $this->saveToCache($phone);
-        }
+        $this->saveToCache($phone);
 
         $this->phone = $phone;
-
-        return $this;
+        $this->phoneStatus = 1;
     }
 
     /**
      * @return int
-     * @throws InvalidArgumentException
      */
     public function getStatus(): int
     {
-        $phoneStatus = $this->getSessionStorage()->get('phone_status');
-
-        if (is_null($phoneStatus)) {
-            return 0;
-        }
-
-        return $phoneStatus;
+        return $this->phoneStatus;
     }
 
     /**
      * @return string|null
-     * @throws InvalidArgumentException
      */
     public function getPhone(): ?string
     {
-        return $this->getSessionStorage()->get('phone');
+        return $this->phone;
     }
 
     /**
@@ -101,7 +129,7 @@ class Msisdn
      */
     private function checkHmac(string $msisdn, string $hmac): bool
     {
-        return $this->hmac->check($msisdn, $hmac);
+        return $this->hmacService->check($msisdn, $hmac);
     }
 
     /**
@@ -111,7 +139,7 @@ class Msisdn
      */
     private function decryptMsisdn(string $msisdn): ?string
     {
-        return $this->decrypt->decrypt($msisdn);
+        return $this->decryptService->decrypt($msisdn);
     }
 
     /**
@@ -119,15 +147,17 @@ class Msisdn
      */
     private function saveToCache(?string $phone): void
     {
-        $this->getSessionStorage()
+        $this->getCacheStorage()
             ->set('phone', $phone)
             ->set('phone_status', $phone ? 1 : -1);
     }
 
-    private function getSessionStorage(): Session
+    private function getCacheStorage(): Session
     {
+        $abstract = Session::abstractKey('personification');
+
         if (!$this->cacheStorage) {
-            $this->cacheStorage = new Session('personification');
+            $this->cacheStorage = app($abstract);
         }
 
         return $this->cacheStorage;

@@ -9,12 +9,12 @@ use Arendach\VodafoneMsisdn\Msisdn;
 use Arendach\VodafoneMsisdn\Services\Logger;
 use Illuminate\Support\Facades\Config;
 
-class VodafoneMsisdnServiceProvider extends ServiceProvider
+class MsisdnServiceProvider extends ServiceProvider
 {
     public function boot(): void
     {
         $this->publishes([
-            __DIR__ . '/../Config/vodafone-msisdn.php' => config_path('vodafone-msisdn.php'),
+            __DIR__ . '/../../config/vodafone-msisdn.php' => config_path('vodafone-msisdn.php'),
         ], 'vodafone-msisdn');
     }
 
@@ -26,12 +26,7 @@ class VodafoneMsisdnServiceProvider extends ServiceProvider
             'level'  => 'debug',
         ]);
 
-        $this->app->singleton(Msisdn::class, function ($app) {
-            return new Msisdn;
-        });
-
-        $this->app->singleton(Logger::class, function ($app) {
-            return new Logger;
-        });
+        $this->app->singleton(Msisdn::class, Msisdn::class);
+        $this->app->singleton(Logger::class, Logger::class);
     }
 }

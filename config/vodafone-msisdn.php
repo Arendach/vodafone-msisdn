@@ -32,4 +32,9 @@ return [
      * Decrypt algorithm
      */
     'decrypt-algo'   => 'aes-256-cbc',
+
+    /**
+     * Throw special exception if fail
+     */
+    'throw-exception' => env('APP_DEBUG', false)
 ];

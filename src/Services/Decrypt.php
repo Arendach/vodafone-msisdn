@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Arendach\VodafoneMsisdn\Services;
 
+use Debugbar;
 use Exception;
 use Arendach\VodafoneMsisdn\Exceptions\DecryptException;
 
@@ -13,9 +14,13 @@ class Decrypt
     private $iv;
     private $algo;
     private $logger;
+    private $isDebug;
+    private $isThrowException;
 
     public function __construct()
     {
+        $this->isDebug = config('vodafone-msisdn.debug-mode');
+        $this->isThrowException = config('vodafone-msisdn.throw-exception');
         $this->secret = config('vodafone-msisdn.decrypt-secret');
         $this->iv = config('vodafone-msisdn.decrypt-iv');
         $this->algo = config('vodafone-msisdn.decrypt-algo');
@@ -29,6 +34,10 @@ class Decrypt
      */
     public function decrypt(string $encryptedString): ?string
     {
+        if ($this->isDebug) {
+            Debugbar::info("Encrypted string -> «{$encryptedString}»");
+        }
+
         try {
 
             $secret = $this->secret;
@@ -43,7 +52,11 @@ class Decrypt
 
             $this->logger->save("Decrypt msisdn failed! Encrypted string: {$encryptedString}, algo: {$this->algo}, secret: {$this->secret}, iv: {$this->iv}");
 
-            throw new DecryptException("Decrypt msisdn failed! Encrypted string: {$encryptedString}");
+            if ($this->isThrowException) {
+                throw new DecryptException("Decrypt msisdn failed! Encrypted string: {$encryptedString}");
+            }
+
+            return null;
 
         }
     }

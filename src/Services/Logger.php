@@ -18,7 +18,7 @@ class Logger
     /**
      * @var bool
      */
-    private $isDebug = false;
+    private $isDebug;
 
     /**
      * Logger constructor.
