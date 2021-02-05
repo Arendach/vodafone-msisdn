@@ -162,4 +162,13 @@ class Msisdn
 
         return $this->cacheStorage;
     }
+
+    public function rebootSession(): void
+    {
+        $session = $this->getCacheStorage();
+
+        if ($session->get('phone_status') == -1) {
+            $session->set('phone_status', 0);
+        }
+    }
 }
