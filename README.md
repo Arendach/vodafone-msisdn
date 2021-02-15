@@ -36,6 +36,10 @@ $msisdnService->decryptAndSave($msisdn, $hmac); // method decryptAndSave return 
 $phone = $msisdnService->getPhone();
 $status = $msisdnService->getStatus();
 
+// using save phone from other 
+$msisdnService->setPhone('380666817731');
+$phone = $msisdnService->getPhone();
+
 echo $phone; // 380666817731
 echo $status; // -1 | 1
 
