@@ -16,7 +16,7 @@ return [
     /**
      * HMAC testing algorithm
      */
-    'hmac-algo'      => 'sha256',
+    'hmac-algo'      => env('MSISDN_HMAC_ALGO', 'sha256'),
 
     /**
      * Decryption key
@@ -31,7 +31,7 @@ return [
     /**
      * Decrypt algorithm
      */
-    'decrypt-algo'   => 'aes-256-cbc',
+    'decrypt-algo'   => env('MSISDN_DECRYPT_ALGO', 'aes-256-cbc'),
 
     /**
      * Throw special exception if fail
