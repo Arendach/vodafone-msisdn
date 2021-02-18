@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Arendach\VodafoneMsisdn\Services;
 
 class Encrypt
@@ -47,7 +49,7 @@ class Encrypt
         $ivLength = strlen($iv);
 
         if (strlen($source) % $ivLength) {
-            return str_pad($source, strlen($source) + 16 - strlen($source) % 16, "\0");
+            return str_pad($source, strlen($source) + $ivLength - strlen($source) % $ivLength, "\0");
         }
 
         return $source;

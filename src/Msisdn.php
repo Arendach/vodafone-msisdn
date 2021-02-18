@@ -44,6 +44,7 @@ class Msisdn
     {
         $this->decryptService = new Decrypt;
         $this->hmacService = new Hmac;
+        $this->cacheStorage = Session::instance('personification');
 
         $this->loading();
     }
@@ -53,9 +54,9 @@ class Msisdn
      */
     private function loading(): void
     {
-        $this->phone = $this->getCacheStorage()->get('phone');
+        $this->phone = $this->cacheStorage->get('phone');
 
-        $phoneStatus = $this->getCacheStorage()->get('phone_status');
+        $phoneStatus = $this->cacheStorage->get('phone_status');
         $this->phoneStatus = in_array($phoneStatus, [1, -1]) ? $phoneStatus : 0;
     }
 
@@ -76,15 +77,15 @@ class Msisdn
     }
 
     /**
-     * @param string $msisdn
-     * @param string $hmac
+     * @param string|null $msisdn
+     * @param string|null $hmac
      * @return string|null
      * @throws Exceptions\DecryptException
      * @throws Exceptions\HmacException
      */
-    public function decryptAndSave(string $msisdn, string $hmac): ?string
+    public function decryptAndSave(?string $msisdn, ?string $hmac): ?string
     {
-        $phone = $this->decrypt($msisdn, $hmac);
+        $phone = (!$msisdn || !$hmac) ? null : $this->decrypt($msisdn, $hmac);
 
         $this->saveToCache($phone);
 
@@ -147,28 +148,15 @@ class Msisdn
      */
     private function saveToCache(?string $phone): void
     {
-        $this->getCacheStorage()
+        $this->cacheStorage
             ->set('phone', $phone)
             ->set('phone_status', $phone ? 1 : -1);
     }
 
-    private function getCacheStorage(): Session
-    {
-        $abstract = Session::abstractKey('personification');
-
-        if (!$this->cacheStorage) {
-            $this->cacheStorage = app($abstract);
-        }
-
-        return $this->cacheStorage;
-    }
-
     public function rebootSession(): void
     {
-        $session = $this->getCacheStorage();
-
-        if ($session->get('phone_status') == -1) {
-            $session->set('phone_status', 0);
+        if ($this->cacheStorage->get('phone_status') == -1) {
+            $this->cacheStorage->set('phone_status', 0);
         }
     }
 }
