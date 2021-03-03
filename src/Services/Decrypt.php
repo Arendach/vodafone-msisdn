@@ -46,7 +46,9 @@ class Decrypt
 
             $decrypted = openssl_decrypt($encryptedString, $algo, $secret, OPENSSL_ZERO_PADDING, $iv);
 
-            return trim($decrypted);
+            $decrypted = trim($decrypted);
+
+            return $this->isValid($decrypted) ? $decrypted : null;
 
         } catch (Exception $exception) {
 
@@ -59,5 +61,14 @@ class Decrypt
             return null;
 
         }
+    }
+
+    private function isValid(?string $phone): bool
+    {
+        if (is_null($phone) || !preg_match('~380[0-9]{9}~', $phone)) {
+            return false;
+        }
+
+        return true;
     }
 }
