@@ -21,7 +21,7 @@ class Hmac
      */
     public function __construct()
     {
-        $this->secret = base64_decode(config('vodafone-msisdn.hmac-secret'));
+        $this->secret = MsisdnServiceHelper::getSecret(config('vodafone-msisdn.hmac-secret'));
         $this->algo = config('vodafone-msisdn.hmac-algo');
         $this->isDebug = config('vodafone-msisdn.debug-mode');
         $this->isThrowException = config('vodafone-msisdn.throw-exception');

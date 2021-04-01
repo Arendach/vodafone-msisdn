@@ -11,7 +11,7 @@ return [
     /**
      * Secret key for HMAC testing
      */
-    'hmac-secret'     => env('MSISDN_HMAC_SECRET'),
+    'hmac-secret'     => env('MSISDN_HMAC_SECRET', 'secret'),
 
     /**
      * HMAC testing algorithm
@@ -21,12 +21,12 @@ return [
     /**
      * Decryption key
      */
-    'decrypt-secret'  => env('MSISDN_DECRYPT_SECRET'),
+    'decrypt-secret'  => env('MSISDN_DECRYPT_SECRET', 'secret'),
 
     /**
      * Decrypt IV parameter
      */
-    'decrypt-iv'      => env('MSISDN_DECRYPT_IV'),
+    'decrypt-iv'      => env('MSISDN_DECRYPT_IV', '1234567890123456'),
 
     /**
      * Decrypt algorithm

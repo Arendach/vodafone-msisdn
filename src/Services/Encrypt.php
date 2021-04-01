@@ -38,7 +38,7 @@ class Encrypt
 
     private function makeHmac(string $msisdn): string
     {
-        $secret = base64_decode(config('vodafone-msisdn.hmac-secret'));
+        $secret = MsisdnServiceHelper::getSecret(config('vodafone-msisdn.hmac-secret'));
         $algo = config('vodafone-msisdn.hmac-algo');
 
         return base64_encode(hash_hmac($algo, $msisdn, $secret, true));
